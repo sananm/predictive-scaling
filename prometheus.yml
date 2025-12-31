@@ -1,0 +1,21 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  # Prometheus self-monitoring
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+
+  # Predictive Scaler application
+  - job_name: "predictive-scaler"
+    static_configs:
+      - targets: ["app:8000"]
+    metrics_path: /metrics
+
+  # Dummy app (for demo purposes)
+  - job_name: "dummy-app"
+    static_configs:
+      - targets: ["dummy-app:80"]
+    metrics_path: /metrics
