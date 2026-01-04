@@ -12,7 +12,7 @@ Features:
 import asyncio
 import json
 from datetime import datetime, timezone
-from typing import Any
+from typing import Any, Callable
 from uuid import UUID
 
 from aiokafka import AIOKafkaProducer
@@ -219,7 +219,7 @@ class MetricsProducer:
         self,
         topic: str,
         messages: list[dict[str, Any]],
-        key_func: callable | None = None,
+        key_func: Callable[[dict[str, Any]], str] | None = None,
     ) -> tuple[int, int]:
         """
         Send a batch of messages to a Kafka topic.

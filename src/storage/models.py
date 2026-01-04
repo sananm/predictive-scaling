@@ -117,7 +117,7 @@ class Prediction(Base):
     prediction_p10: Mapped[float] = mapped_column(Float, nullable=False)
     prediction_p50: Mapped[float] = mapped_column(Float, nullable=False)
     prediction_p90: Mapped[float] = mapped_column(Float, nullable=False)
-    metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    prediction_metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
 
     __table_args__ = (
         Index("idx_predictions_service_target", "service_name", "target_timestamp"),
@@ -202,7 +202,7 @@ class BusinessEvent(Base):
 
     # Source and metadata
     source: Mapped[str] = mapped_column(String(100), nullable=False)
-    metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
+    event_metadata: Mapped[dict[str, Any]] = mapped_column(JSONB, default=dict)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
 
 
