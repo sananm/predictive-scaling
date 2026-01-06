@@ -74,6 +74,12 @@ test-phase4:
 test-phase5:
 	pytest tests/unit/test_phase5_models.py -v
 
+test-phase6:
+	pytest tests/unit/test_phase6_prediction.py -v
+
+test-phase7:
+	pytest tests/unit/test_phase7_decision.py -v
+
 # Quick smoke test (imports only)
 test-imports:
 	python -c "from config.settings import get_settings; print('Phase 1: OK')"
@@ -81,6 +87,8 @@ test-imports:
 	python -c "from src.streaming import MetricsProducer; print('Phase 3: OK')"
 	python -c "from src.features import FeatureEngineer; print('Phase 4: OK')"
 	python -c "from src.models import EnsembleCombiner; print('Phase 5: OK')"
+	python -c "from src.prediction import PredictorOrchestrator; print('Phase 6: OK')"
+	python -c "from src.decision import DecisionEngine; print('Phase 7: OK')"
 
 # Code Quality
 lint:
