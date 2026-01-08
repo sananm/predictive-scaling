@@ -83,6 +83,9 @@ test-phase7:
 test-phase8:
 	pytest tests/unit/test_phase8_execution.py -v
 
+test-phase9:
+	pytest tests/unit/test_phase9_monitoring.py -v
+
 # Quick smoke test (imports only)
 test-imports:
 	python -c "from config.settings import get_settings; print('Phase 1: OK')"
@@ -93,6 +96,7 @@ test-imports:
 	python -c "from src.prediction import PredictorOrchestrator; print('Phase 6: OK')"
 	python -c "from src.decision import DecisionEngine; print('Phase 7: OK')"
 	python -c "from src.execution import MockExecutor, VerificationSystem, RollbackManager; print('Phase 8: OK')"
+	python -c "from src.monitoring import ScalingMetrics, AlertManager, AuditLogger, HealthChecker; print('Phase 9: OK')"
 
 # Code Quality
 lint:
