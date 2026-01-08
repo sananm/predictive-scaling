@@ -6,6 +6,8 @@ This module provides:
 - Alert management and notifications
 - Audit logging for compliance
 - Health check system
+- Prediction accuracy tracking
+- Cost tracking and savings calculation
 """
 
 from src.monitoring.metrics import (
@@ -42,6 +44,24 @@ from src.monitoring.health import (
     get_health_checker,
     init_health_checker,
 )
+from src.monitoring.accuracy import (
+    AccuracyAlert,
+    AccuracyMetrics,
+    AccuracyTracker,
+    PredictionRecord,
+    get_accuracy_tracker,
+    init_accuracy_tracker,
+)
+from src.monitoring.cost import (
+    CostPeriod,
+    CostRecord,
+    CostSummary,
+    CostTracker,
+    InstanceCost,
+    SavingsRecord,
+    get_cost_tracker,
+    init_cost_tracker,
+)
 
 
 __all__ = [
@@ -75,4 +95,20 @@ __all__ = [
     "SystemHealth",
     "get_health_checker",
     "init_health_checker",
+    # Accuracy Tracking
+    "AccuracyAlert",
+    "AccuracyMetrics",
+    "AccuracyTracker",
+    "PredictionRecord",
+    "get_accuracy_tracker",
+    "init_accuracy_tracker",
+    # Cost Tracking
+    "CostPeriod",
+    "CostRecord",
+    "CostSummary",
+    "CostTracker",
+    "InstanceCost",
+    "SavingsRecord",
+    "get_cost_tracker",
+    "init_cost_tracker",
 ]

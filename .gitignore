@@ -75,3 +75,4 @@ alembic/versions/*.pyc
 
 # Personal notes
 DEVELOPMENT_LOG.md
+instructions.md
