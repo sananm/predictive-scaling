@@ -17,7 +17,6 @@ import pandas as pd
 from .base import BaseExtractor
 from .config import FeatureConfig
 
-
 # Default event type weights
 DEFAULT_EVENT_WEIGHTS = {
     "product_launch": 3.0,

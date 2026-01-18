@@ -11,8 +11,9 @@ Features:
 
 import asyncio
 import json
-from datetime import datetime, timezone
-from typing import Any, Callable
+from collections.abc import Callable
+from datetime import UTC, datetime
+from typing import Any
 from uuid import UUID
 
 from aiokafka import AIOKafkaProducer
@@ -179,7 +180,7 @@ class MetricsProducer:
 
         try:
             # Add metadata
-            message["_produced_at"] = datetime.now(timezone.utc).isoformat()
+            message["_produced_at"] = datetime.now(UTC).isoformat()
 
             # Send message
             future = await self._producer.send(
@@ -248,7 +249,7 @@ class MetricsProducer:
         # Send all messages (they'll be batched by the producer)
         for message in messages:
             try:
-                message["_produced_at"] = datetime.now(timezone.utc).isoformat()
+                message["_produced_at"] = datetime.now(UTC).isoformat()
 
                 key = key_func(message) if key_func else None
 
@@ -348,7 +349,7 @@ class MetricsProducer:
             "topic": topic,
             "message": message,
             "error": error,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         })
 
     async def retry_dlq(self) -> tuple[int, int]:

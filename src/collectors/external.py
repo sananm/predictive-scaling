@@ -9,7 +9,7 @@ upcoming traffic changes:
 - Search trends
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
@@ -90,7 +90,7 @@ class ExternalSignalsCollector(BaseCollector):
             List of metric dictionaries representing signals
         """
         metrics = []
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         # Collect from Twitter
         if self.twitter_bearer_token and self.brand_keywords:

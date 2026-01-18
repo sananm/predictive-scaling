@@ -12,7 +12,7 @@ Responsibilities:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 from uuid import uuid4
@@ -20,18 +20,15 @@ from uuid import uuid4
 import numpy as np
 
 from src.decision.candidates import (
-    CandidateConfig,
     CandidateGenerator,
     ScalingCandidate,
 )
-from src.decision.capacity_model import CapacityConfig, CapacityModel
+from src.decision.capacity_model import CapacityModel
 from src.decision.cost_model import CloudProvider, CostModel, InfrastructureConfig
-from src.decision.risk_model import RiskAssessment, RiskConfig, RiskModel
+from src.decision.risk_model import RiskAssessment, RiskModel
 from src.decision.strategies import (
     ScalingPlan,
-    StrategyConfig,
     StrategySelector,
-    StrategyType,
 )
 from src.utils.logging import get_logger
 
@@ -280,6 +277,7 @@ class DecisionEngine:
         current_state: InfrastructureState,
         predictions: list[PredictionInput],
         force_evaluation: bool = False,
+        allowed_instance_types: list[str] | None = None,
     ) -> ScalingDecision | None:
         """
         Make a scaling decision based on current state and predictions.
@@ -288,11 +286,13 @@ class DecisionEngine:
             current_state: Current infrastructure state
             predictions: Predictions for different horizons
             force_evaluation: Skip cooldown check
+            allowed_instance_types: If set, only consider these instance types
+                                   (for horizontal scaling only, pass [current_type])
 
         Returns:
             ScalingDecision if action needed, None if maintaining current state
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Check cooldown
         if not force_evaluation and self._in_cooldown():
@@ -316,6 +316,7 @@ class DecisionEngine:
             target_rps=target_rps,
             current_instances=current_state.instance_count,
             current_instance_type=current_state.instance_type,
+            instance_types=allowed_instance_types,
         )
 
         if not candidate_set.feasible_candidates:
@@ -601,7 +602,7 @@ class DecisionEngine:
             return None
 
         # Find the prediction with highest load increase
-        now = datetime.now(timezone.utc)
+        datetime.now(UTC)
         for pred in sorted(predictions, key=lambda p: p.horizon_minutes):
             # Check if this prediction shows significant increase
             if pred.p90 > pred.p50 * 1.3:  # 30% increase
@@ -669,7 +670,7 @@ class DecisionEngine:
         if self._last_decision_time is None:
             return False
 
-        elapsed = (datetime.now(timezone.utc) - self._last_decision_time).total_seconds()
+        elapsed = (datetime.now(UTC) - self._last_decision_time).total_seconds()
         return elapsed < self.config.cooldown_seconds
 
     def approve_decision(self, decision_id: str) -> bool:

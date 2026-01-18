@@ -9,11 +9,11 @@ Responsibilities:
 - Generate cost reports
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from collections import defaultdict
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
-from collections import defaultdict
 
 from src.utils.logging import get_logger
 
@@ -263,7 +263,7 @@ class CostTracker:
         Returns:
             The created CostRecord
         """
-        ts = timestamp or datetime.now(timezone.utc)
+        ts = timestamp or datetime.now(UTC)
         instance_cost = self._instance_costs.get(instance_type)
 
         if instance_cost:
@@ -364,7 +364,7 @@ class CostTracker:
         Returns:
             SavingsRecord or None if insufficient data
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Determine period duration
         if period == CostPeriod.HOURLY:
@@ -466,7 +466,7 @@ class CostTracker:
         Returns:
             CostSummary or None if no data
         """
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         period_start = now - timedelta(hours=period_hours)
 
         records = [
@@ -551,7 +551,7 @@ class CostTracker:
 
     def _cleanup_old_records(self, service_name: str) -> None:
         """Remove records older than retention period."""
-        cutoff = datetime.now(timezone.utc) - timedelta(days=self._retention_days)
+        cutoff = datetime.now(UTC) - timedelta(days=self._retention_days)
 
         self._cost_records[service_name] = [
             r for r in self._cost_records[service_name] if r.timestamp >= cutoff
@@ -569,7 +569,7 @@ class CostTracker:
         hours: int = 24,
     ) -> list[CostRecord]:
         """Get recent cost records."""
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=hours)
         return [
             r
             for r in self._cost_records.get(service_name, [])
@@ -600,7 +600,7 @@ class CostTracker:
             Report dictionary
         """
         report = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "period_hours": period_hours,
             "services": [],
             "totals": {

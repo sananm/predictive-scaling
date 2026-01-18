@@ -11,7 +11,7 @@ Responsibilities:
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -80,7 +80,7 @@ class RollbackRequest:
     action: ScalingAction | None = None
     policy: RollbackPolicy = field(default_factory=RollbackPolicy)
     metadata: dict[str, Any] = field(default_factory=dict)
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
 
 
 @dataclass
@@ -233,7 +233,7 @@ class RollbackManager:
 
         except Exception as e:
             record.error_message = str(e)
-            record.completed_at = datetime.now(timezone.utc)
+            record.completed_at = datetime.now(UTC)
             logger.error(
                 "Rollback failed",
                 request_id=request.request_id,
@@ -256,12 +256,12 @@ class RollbackManager:
         record: RollbackRecord,
     ) -> None:
         """Execute immediate rollback."""
-        record.started_at = datetime.now(timezone.utc)
+        record.started_at = datetime.now(UTC)
         record.attempts = 1
 
         result = await request.executor.rollback(request.action_id)
         record.result = result
-        record.completed_at = datetime.now(timezone.utc)
+        record.completed_at = datetime.now(UTC)
 
         if result.success:
             logger.info(
@@ -319,13 +319,13 @@ class RollbackManager:
     ) -> None:
         """Execute gradual step-by-step rollback."""
         policy = request.policy
-        record.started_at = datetime.now(timezone.utc)
+        record.started_at = datetime.now(UTC)
 
         # Get current and target states
         rollback_state = request.executor.get_rollback_state(request.action_id)
         if rollback_state is None:
             record.error_message = "No rollback state found"
-            record.completed_at = datetime.now(timezone.utc)
+            record.completed_at = datetime.now(UTC)
             return
 
         current_state = await request.executor.get_current_state()
@@ -340,7 +340,7 @@ class RollbackManager:
                 previous_state=current_state,
                 restored_state=current_state,
             )
-            record.completed_at = datetime.now(timezone.utc)
+            record.completed_at = datetime.now(UTC)
             return
 
         # Calculate step size
@@ -390,7 +390,7 @@ class RollbackManager:
             result = await request.executor.scale(intermediate_action)
             if not result.is_success:
                 record.error_message = f"Step {step + 1} failed: {result.error_message}"
-                record.completed_at = datetime.now(timezone.utc)
+                record.completed_at = datetime.now(UTC)
                 return
 
             current_count = intermediate_target
@@ -410,7 +410,7 @@ class RollbackManager:
             previous_state=rollback_state,
             restored_state=final_state,
         )
-        record.completed_at = datetime.now(timezone.utc)
+        record.completed_at = datetime.now(UTC)
 
         logger.info(
             "Gradual rollback completed",
@@ -429,7 +429,7 @@ class RollbackManager:
     ) -> None:
         """Retry the original action before rolling back."""
         policy = request.policy
-        record.started_at = datetime.now(timezone.utc)
+        record.started_at = datetime.now(UTC)
 
         if request.action is None:
             # No action to retry, fall back to immediate rollback
@@ -478,7 +478,7 @@ class RollbackManager:
                         previous_state=current_state,
                         restored_state=current_state,
                     )
-                    record.completed_at = datetime.now(timezone.utc)
+                    record.completed_at = datetime.now(UTC)
                     record.metadata["retry_succeeded"] = True
                     return
 
@@ -531,7 +531,7 @@ class RollbackManager:
         """Get recent rollback records."""
         records = list(self._records.values())
         records.sort(
-            key=lambda r: r.started_at or datetime.min.replace(tzinfo=timezone.utc),
+            key=lambda r: r.started_at or datetime.min.replace(tzinfo=UTC),
             reverse=True,
         )
         return records[:limit]

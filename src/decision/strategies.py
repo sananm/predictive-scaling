@@ -10,7 +10,7 @@ Responsibilities:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
 
@@ -181,7 +181,7 @@ class GradualRampStrategy(ScalingStrategy):
     ) -> ScalingPlan:
         """Create a gradual ramping plan."""
         steps = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         current = current_instances
         step_num = 1
 
@@ -280,7 +280,7 @@ class PreemptiveBurstStrategy(ScalingStrategy):
     ) -> ScalingPlan:
         """Create a preemptive burst plan."""
         steps = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Calculate when to start scaling
         if spike_time:
@@ -371,7 +371,7 @@ class EmergencyScaleStrategy(ScalingStrategy):
         **kwargs: Any,
     ) -> ScalingPlan:
         """Create an emergency scaling plan (single step)."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Emergency scale is a single, immediate step
         step = ScalingStep(
@@ -422,7 +422,7 @@ class ScaleDownStrategy(ScalingStrategy):
     ) -> ScalingPlan:
         """Create a conservative scale-down plan."""
         steps = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Ensure we don't go below minimum
         target_instances = max(target_instances, config.min_instances)
@@ -502,7 +502,7 @@ class MaintainStrategy(ScalingStrategy):
         **kwargs: Any,
     ) -> ScalingPlan:
         """Create a no-op plan."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         return ScalingPlan(
             strategy_type=StrategyType.MAINTAIN,

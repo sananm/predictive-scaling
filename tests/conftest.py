@@ -3,14 +3,14 @@ Shared test fixtures and configuration.
 """
 
 import asyncio
-from datetime import datetime, timedelta, timezone
-from typing import Any, Generator
+from collections.abc import Generator
+from datetime import UTC, datetime, timedelta
+from typing import Any
 from unittest.mock import AsyncMock, MagicMock
 
 import numpy as np
 import pandas as pd
 import pytest
-
 
 # ============================================================================
 # Event Loop Configuration
@@ -33,7 +33,7 @@ def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
 @pytest.fixture
 def now() -> datetime:
     """Current UTC datetime."""
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 @pytest.fixture

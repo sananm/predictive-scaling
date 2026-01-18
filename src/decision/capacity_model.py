@@ -8,8 +8,8 @@ Responsibilities:
 - Support capacity testing/benchmarking to calibrate estimates
 """
 
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
@@ -502,7 +502,7 @@ class CapacityModel:
             warm_up_seconds=capacity.warm_up_seconds,
             degradation_threshold=capacity.degradation_threshold,
             degradation_rate=capacity.degradation_rate,
-            last_benchmarked=datetime.now(timezone.utc),
+            last_benchmarked=datetime.now(UTC),
         )
 
         logger.info(

@@ -13,7 +13,10 @@ help:
 	@echo "  test          Run all tests"
 	@echo "  test-unit     Run unit tests only"
 	@echo "  test-cov      Run tests with coverage"
+	@echo "  test-with-db  Run tests with database (auto-starts postgres)"
 	@echo "  test-imports  Quick smoke test (imports only)"
+	@echo "  test-integration  Run integration tests"
+	@echo "  test-e2e      Run end-to-end tests"
 	@echo "  test-phase1   Test Phase 1 (config, logging, db)"
 	@echo "  test-phase2   Test Phase 2 (collectors)"
 	@echo "  test-phase3   Test Phase 3 (streaming)"
@@ -28,6 +31,7 @@ help:
 	@echo "Docker:"
 	@echo "  docker-up     Start all Docker services"
 	@echo "  docker-down   Stop all Docker services"
+	@echo "  docker-db     Start just PostgreSQL for testing"
 	@echo "  docker-build  Build Docker image"
 	@echo ""
 	@echo "Database:"
@@ -86,17 +90,32 @@ test-phase8:
 test-phase9:
 	pytest tests/unit/test_phase9_monitoring.py -v
 
+test-phase10:
+	pytest tests/unit/test_phase10_trackers.py -v
+
+test-phase11:
+	pytest tests/unit/test_phase11_services.py -v
+
+test-integration:
+	pytest tests/integration/ -v
+
+test-e2e:
+	pytest tests/e2e/ -v
+
 # Quick smoke test (imports only)
 test-imports:
-	python -c "from config.settings import get_settings; print('Phase 1: OK')"
-	python -c "from src.collectors import PrometheusCollector; print('Phase 2: OK')"
-	python -c "from src.streaming import MetricsProducer; print('Phase 3: OK')"
-	python -c "from src.features import FeatureEngineer; print('Phase 4: OK')"
-	python -c "from src.models import EnsembleCombiner; print('Phase 5: OK')"
-	python -c "from src.prediction import PredictorOrchestrator; print('Phase 6: OK')"
-	python -c "from src.decision import DecisionEngine; print('Phase 7: OK')"
-	python -c "from src.execution import MockExecutor, VerificationSystem, RollbackManager; print('Phase 8: OK')"
-	python -c "from src.monitoring import ScalingMetrics, AlertManager, AuditLogger, HealthChecker; print('Phase 9: OK')"
+	python3 -c "from config.settings import get_settings; print('Phase 1: OK')"
+	python3 -c "from src.collectors import PrometheusCollector; print('Phase 2: OK')"
+	python3 -c "from src.streaming import MetricsProducer; print('Phase 3: OK')"
+	python3 -c "from src.features import FeatureEngineer; print('Phase 4: OK')"
+	python3 -c "from src.models import EnsembleCombiner; print('Phase 5: OK')"
+	python3 -c "from src.prediction import PredictorOrchestrator; print('Phase 6: OK')"
+	python3 -c "from src.decision import DecisionEngine; print('Phase 7: OK')"
+	python3 -c "from src.execution import MockExecutor, VerificationSystem, RollbackManager; print('Phase 8: OK')"
+	python3 -c "from src.monitoring import ScalingMetrics, AlertManager, AuditLogger, HealthChecker; print('Phase 9: OK')"
+	python3 -c "from src.storage import get_session, PredictionsRepository, ScalingDecisionsRepository; print('Phase 10: OK')"
+	python3 -c "from src.services import PredictionService, ScalingService, SchedulerService; print('Phase 11: OK')"
+	python3 -c "from src.api.main import app; print('Phase 11 API: OK')"
 
 # Code Quality
 lint:
@@ -137,6 +156,22 @@ docker-logs:
 docker-restart:
 	docker-compose down && docker-compose up -d
 
+# Start just database for testing
+docker-db:
+	docker-compose up -d postgres
+
+# Start database and redis for testing
+docker-test-deps:
+	docker-compose up -d postgres redis
+
+# Run tests with database (starts db, runs tests, stops db)
+test-with-db:
+	docker-compose up -d postgres
+	@echo "Waiting for database..."
+	@sleep 3
+	pytest tests/ -v || true
+	docker-compose stop postgres
+
 # Database
 migrate:
 	alembic upgrade head
@@ -155,13 +190,22 @@ run:
 dev:
 	uvicorn src.api.main:app --host 0.0.0.0 --port 8000 --reload
 
-# Training
+# Scripts
+setup-db:
+	python scripts/setup_database.py
+
 train-models:
 	python scripts/train_models.py
 
 generate-data:
 	python scripts/generate_synthetic_data.py
 
+load-test:
+	python scripts/load_generator.py --scenario spike --duration 60
+
 # Demo
 demo:
 	python scripts/demo.py
+
+demo-check:
+	python scripts/demo.py --check-services

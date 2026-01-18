@@ -9,7 +9,7 @@ Coordinates all feature extractors and provides:
 """
 
 import hashlib
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import pandas as pd
@@ -176,7 +176,7 @@ class FeatureEngineer:
         # Update metadata
         self._feature_names = result.columns.tolist()
         self._feature_hash = self._compute_feature_hash()
-        self._last_computed = datetime.now(timezone.utc)
+        self._last_computed = datetime.now(UTC)
 
         # Cache result
         if self._cache_enabled:

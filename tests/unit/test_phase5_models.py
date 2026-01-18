@@ -9,10 +9,7 @@ Tests for:
 - Ensemble combiner
 """
 
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any
-from unittest.mock import MagicMock, patch
+from datetime import UTC, datetime, timedelta
 
 import numpy as np
 import pandas as pd
@@ -48,7 +45,7 @@ class TestBaseModel:
         """Test PredictionResult creation."""
         from src.models.base import PredictionResult
 
-        timestamps = [datetime.now(timezone.utc) + timedelta(minutes=i) for i in range(10)]
+        timestamps = [datetime.now(UTC) + timedelta(minutes=i) for i in range(10)]
         p10 = np.random.rand(10) * 100
         p50 = p10 + np.random.rand(10) * 20
         p90 = p50 + np.random.rand(10) * 20
@@ -76,7 +73,7 @@ class TestBaseModel:
         p90 = np.array([120, 125, 130])
 
         result = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 3,
+            timestamps=[datetime.now(UTC)] * 3,
             p10=p10,
             p50=np.array([100, 105, 110]),
             p90=p90,
@@ -93,7 +90,7 @@ class TestBaseModel:
         from src.models.base import PredictionResult
 
         result = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 5,
+            timestamps=[datetime.now(UTC)] * 5,
             p10=np.array([80, 85, 90, 95, 100]),
             p50=np.array([100, 105, 110, 115, 120]),
             p90=np.array([120, 125, 130, 135, 140]),
@@ -124,7 +121,7 @@ class TestBaseModel:
             model_id="test-123",
             model_name="transformer",
             model_version="1.0.0",
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
         )
 
         assert metadata.model_id == "test-123"
@@ -241,7 +238,8 @@ class TestTransformerModel:
     def test_transformer_predictor_forward(self):
         """Test TransformerPredictor forward pass."""
         import torch
-        from src.models.transformer import TransformerPredictor, TransformerConfig
+
+        from src.models.transformer import TransformerConfig, TransformerPredictor
 
         config = TransformerConfig(
             input_dim=10,
@@ -497,14 +495,14 @@ class TestEnsembleCombiner:
 
     def test_model_agreement_metric(self):
         """Test model agreement calculation."""
-        from src.models.combiner import EnsembleCombiner
         from src.models.base import PredictionResult
+        from src.models.combiner import EnsembleCombiner
 
         combiner = EnsembleCombiner()
 
         # Create predictions that agree
         pred1 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 5,
+            timestamps=[datetime.now(UTC)] * 5,
             p10=np.array([90, 95, 100, 105, 110]),
             p50=np.array([100, 105, 110, 115, 120]),
             p90=np.array([110, 115, 120, 125, 130]),
@@ -514,7 +512,7 @@ class TestEnsembleCombiner:
         )
 
         pred2 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 5,
+            timestamps=[datetime.now(UTC)] * 5,
             p10=np.array([92, 97, 102, 107, 112]),
             p50=np.array([102, 107, 112, 117, 122]),
             p90=np.array([112, 117, 122, 127, 132]),
@@ -530,13 +528,13 @@ class TestEnsembleCombiner:
 
     def test_combine_predictions(self):
         """Test prediction combination."""
-        from src.models.combiner import EnsembleCombiner
         from src.models.base import PredictionResult
+        from src.models.combiner import EnsembleCombiner
 
         combiner = EnsembleCombiner()
 
         pred1 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 3,
+            timestamps=[datetime.now(UTC)] * 3,
             p10=np.array([80, 85, 90]),
             p50=np.array([100, 105, 110]),
             p90=np.array([120, 125, 130]),
@@ -546,7 +544,7 @@ class TestEnsembleCombiner:
         )
 
         pred2 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)] * 3,
+            timestamps=[datetime.now(UTC)] * 3,
             p10=np.array([85, 90, 95]),
             p50=np.array([105, 110, 115]),
             p90=np.array([125, 130, 135]),

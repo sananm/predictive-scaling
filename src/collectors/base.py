@@ -7,7 +7,7 @@ The base class handles the background loop, error handling, and publishing.
 
 import asyncio
 from abc import ABC, abstractmethod
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from src.utils.logging import get_logger
@@ -125,7 +125,7 @@ class BaseCollector(ABC):
                 if metrics:
                     await self.publish(metrics)
                     self._collections_total += 1
-                    self._last_collection_time = datetime.now(timezone.utc)
+                    self._last_collection_time = datetime.now(UTC)
                     self._last_error = None
 
             except Exception as e:

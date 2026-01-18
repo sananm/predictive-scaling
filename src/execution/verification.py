@@ -10,15 +10,15 @@ Responsibilities:
 """
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from src.execution.base import (
     BaseExecutor,
     ScalingAction,
-    VerificationResult,
 )
 from src.utils.logging import get_logger
 
@@ -56,7 +56,7 @@ class VerificationCheck:
     message: str
     value: Any = None
     threshold: Any = None
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -217,7 +217,7 @@ class VerificationSystem:
             action=action,
             config=cfg,
             status=VerificationStatus.IN_PROGRESS,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
         )
         self._sessions[action.action_id] = session
 
@@ -226,17 +226,17 @@ class VerificationSystem:
             await asyncio.sleep(cfg.stabilization_seconds)
 
             # Run verification loop with timeout
-            start_time = datetime.now(timezone.utc)
+            start_time = datetime.now(UTC)
             deadline = start_time + timedelta(seconds=cfg.timeout_seconds)
 
-            while datetime.now(timezone.utc) < deadline:
+            while datetime.now(UTC) < deadline:
                 # Run all checks
                 session.checks = await self._run_checks(action, cfg)
 
                 # Check if all passed
                 if session.all_checks_passed:
                     session.status = VerificationStatus.PASSED
-                    session.completed_at = datetime.now(timezone.utc)
+                    session.completed_at = datetime.now(UTC)
 
                     logger.info(
                         "Verification passed",
@@ -250,7 +250,7 @@ class VerificationSystem:
 
             # Timeout
             session.status = VerificationStatus.TIMEOUT
-            session.completed_at = datetime.now(timezone.utc)
+            session.completed_at = datetime.now(UTC)
             session.error_message = "Verification timeout"
 
             logger.warning(
@@ -267,7 +267,7 @@ class VerificationSystem:
 
         except Exception as e:
             session.status = VerificationStatus.FAILED
-            session.completed_at = datetime.now(timezone.utc)
+            session.completed_at = datetime.now(UTC)
             session.error_message = str(e)
 
             logger.error(
@@ -526,7 +526,7 @@ class VerificationSystem:
         """Get recent verification sessions."""
         sessions = list(self._sessions.values())
         sessions.sort(
-            key=lambda s: s.started_at or datetime.min.replace(tzinfo=timezone.utc),
+            key=lambda s: s.started_at or datetime.min.replace(tzinfo=UTC),
             reverse=True,
         )
         return sessions[:limit]

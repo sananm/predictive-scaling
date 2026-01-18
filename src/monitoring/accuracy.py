@@ -10,10 +10,10 @@ Responsibilities:
 """
 
 import math
-from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
-from typing import Any
 from collections import defaultdict
+from dataclasses import dataclass
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
 import numpy as np
 
@@ -312,7 +312,7 @@ class AccuracyTracker:
         records = self._predictions.get(key, [])
 
         matched = 0
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         tolerance = timedelta(minutes=tolerance_minutes)
 
         for record in records:
@@ -359,7 +359,7 @@ class AccuracyTracker:
         records = self._predictions.get(key, [])
 
         # Filter to records with actuals in the period
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         period_start = now - timedelta(hours=period_hours)
 
         valid_records = [
@@ -448,7 +448,7 @@ class AccuracyTracker:
     def _check_accuracy_alerts(self, metrics: AccuracyMetrics) -> None:
         """Check if metrics trigger any alerts."""
         alerts = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # MAPE alerts
         if metrics.mape >= self._mape_error:
@@ -532,7 +532,7 @@ class AccuracyTracker:
 
     def _cleanup_old_records(self, key: tuple[str, int, str]) -> None:
         """Remove records older than retention period."""
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=self._retention_hours)
+        cutoff = datetime.now(UTC) - timedelta(hours=self._retention_hours)
         self._predictions[key] = [
             r for r in self._predictions[key] if r.predicted_at >= cutoff
         ]
@@ -559,7 +559,7 @@ class AccuracyTracker:
     def get_active_alerts(self) -> list[AccuracyAlert]:
         """Get active accuracy alerts."""
         # Return alerts from the last hour
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=1)
+        cutoff = datetime.now(UTC) - timedelta(hours=1)
         return [a for a in self._alerts if a.triggered_at >= cutoff]
 
     def generate_report(
@@ -578,7 +578,7 @@ class AccuracyTracker:
             Report dictionary
         """
         report = {
-            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "generated_at": datetime.now(UTC).isoformat(),
             "period_hours": period_hours,
             "service_filter": service_name,
             "models": [],

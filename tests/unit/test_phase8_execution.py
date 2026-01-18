@@ -9,13 +9,11 @@ Tests cover:
 """
 
 import asyncio
-from datetime import datetime, timezone
-from unittest.mock import AsyncMock, MagicMock
+from datetime import UTC, datetime
 
 import pytest
 
 from src.execution.base import (
-    BaseExecutor,
     ExecutionResult,
     ExecutionStatus,
     ExecutorType,
@@ -23,15 +21,6 @@ from src.execution.base import (
     MockExecutor,
     RollbackResult,
     ScalingAction,
-    VerificationResult,
-)
-from src.execution.verification import (
-    VerificationCheck,
-    VerificationCheckType,
-    VerificationConfig,
-    VerificationSession,
-    VerificationStatus,
-    VerificationSystem,
 )
 from src.execution.rollback import (
     RollbackManager,
@@ -41,7 +30,14 @@ from src.execution.rollback import (
     RollbackRequest,
     RollbackStrategy,
 )
-
+from src.execution.verification import (
+    VerificationCheck,
+    VerificationCheckType,
+    VerificationConfig,
+    VerificationSession,
+    VerificationStatus,
+    VerificationSystem,
+)
 
 # =============================================================================
 # Infrastructure State Tests
@@ -55,7 +51,7 @@ class TestInfrastructureState:
         """Test creating infrastructure state."""
         state = InfrastructureState(
             executor_type=ExecutorType.MOCK,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=5,
             instance_type="t3.medium",
             healthy_count=5,
@@ -70,7 +66,7 @@ class TestInfrastructureState:
         """Test unhealthy infrastructure state."""
         state = InfrastructureState(
             executor_type=ExecutorType.MOCK,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=5,
             healthy_count=3,
             unhealthy_count=2,
@@ -83,7 +79,7 @@ class TestInfrastructureState:
         """Test converting state to dictionary."""
         state = InfrastructureState(
             executor_type=ExecutorType.KUBERNETES,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=10,
             healthy_count=10,
         )
@@ -168,8 +164,8 @@ class TestExecutionResult:
         result = ExecutionResult(
             action_id="test-001",
             status=ExecutionStatus.COMPLETED,
-            started_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
-            completed_at=datetime(2024, 1, 1, 12, 5, 0, tzinfo=timezone.utc),
+            started_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+            completed_at=datetime(2024, 1, 1, 12, 5, 0, tzinfo=UTC),
         )
 
         assert result.is_success is True
@@ -180,7 +176,7 @@ class TestExecutionResult:
         result = ExecutionResult(
             action_id="test-002",
             status=ExecutionStatus.FAILED,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
             error_message="Connection timeout",
         )
 
@@ -192,7 +188,7 @@ class TestExecutionResult:
         result = ExecutionResult(
             action_id="test-003",
             status=ExecutionStatus.VERIFIED,
-            started_at=datetime.now(timezone.utc),
+            started_at=datetime.now(UTC),
         )
 
         assert result.is_success is True
@@ -634,7 +630,7 @@ class TestRollbackRecord:
         """Test successful rollback record."""
         state = InfrastructureState(
             executor_type=ExecutorType.MOCK,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=5,
             healthy_count=5,
         )
@@ -652,8 +648,8 @@ class TestRollbackRecord:
             reason=RollbackReason.VERIFICATION_FAILED,
             strategy=RollbackStrategy.IMMEDIATE,
             result=result,
-            started_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=timezone.utc),
-            completed_at=datetime(2024, 1, 1, 12, 1, 0, tzinfo=timezone.utc),
+            started_at=datetime(2024, 1, 1, 12, 0, 0, tzinfo=UTC),
+            completed_at=datetime(2024, 1, 1, 12, 1, 0, tzinfo=UTC),
         )
 
         assert record.success is True
@@ -975,9 +971,6 @@ class TestModuleImports:
         from src.execution import (
             BaseExecutor,
             MockExecutor,
-            ExecutorType,
-            ScalingAction,
-            ExecutionResult,
         )
 
         assert BaseExecutor is not None
@@ -986,10 +979,8 @@ class TestModuleImports:
     def test_import_verification(self):
         """Test importing verification module."""
         from src.execution import (
-            VerificationSystem,
             VerificationConfig,
-            VerificationSession,
-            VerificationCheck,
+            VerificationSystem,
         )
 
         assert VerificationSystem is not None
@@ -1000,8 +991,6 @@ class TestModuleImports:
         from src.execution import (
             RollbackManager,
             RollbackPolicy,
-            RollbackStrategy,
-            RollbackReason,
         )
 
         assert RollbackManager is not None
@@ -1010,8 +999,8 @@ class TestModuleImports:
     def test_optional_imports_flags(self):
         """Test optional import flags."""
         from src.execution import (
-            HAS_KUBERNETES,
             HAS_AWS,
+            HAS_KUBERNETES,
             HAS_TERRAFORM,
         )
 

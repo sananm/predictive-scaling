@@ -13,7 +13,7 @@ Responsibilities:
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 from src.execution.base import (
@@ -33,7 +33,6 @@ logger = get_logger(__name__)
 # Kubernetes client imports (optional - gracefully handle if not installed)
 try:
     from kubernetes import client, config
-    from kubernetes.client.rest import ApiException
 
     K8S_AVAILABLE = True
 except ImportError:
@@ -219,7 +218,7 @@ class KubernetesExecutor(BaseExecutor):
         Returns:
             ExecutionResult with status
         """
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
 
         # Store previous state for rollback
         try:
@@ -237,7 +236,7 @@ class KubernetesExecutor(BaseExecutor):
                         action_id=action.action_id,
                         status=ExecutionStatus.FAILED,
                         started_at=started_at,
-                        completed_at=datetime.now(timezone.utc),
+                        completed_at=datetime.now(UTC),
                         previous_state=previous_state,
                         error_message="Failed to connect to Kubernetes cluster",
                     )
@@ -257,7 +256,7 @@ class KubernetesExecutor(BaseExecutor):
                         action_id=action.action_id,
                         status=ExecutionStatus.FAILED,
                         started_at=started_at,
-                        completed_at=datetime.now(timezone.utc),
+                        completed_at=datetime.now(UTC),
                         previous_state=previous_state,
                         error_message="Rollout timeout",
                         rollback_available=True,
@@ -269,7 +268,7 @@ class KubernetesExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.COMPLETED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 current_state=current_state,
             )
@@ -290,7 +289,7 @@ class KubernetesExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.FAILED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 error_message=str(e),
                 rollback_available=True,
@@ -322,11 +321,11 @@ class KubernetesExecutor(BaseExecutor):
         if not self._apps_v1:
             return False
 
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
         timeout = timeout_seconds or self.k8s_config.rollout_timeout_seconds
 
         while True:
-            elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+            elapsed = (datetime.now(UTC) - start_time).total_seconds()
             if elapsed > timeout:
                 logger.warning("Rollout timeout", elapsed=elapsed, timeout=timeout)
                 return False
@@ -590,7 +589,7 @@ class KubernetesExecutor(BaseExecutor):
                 # Return mock state if not connected
                 return InfrastructureState(
                     executor_type=self.executor_type,
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     instance_count=0,
                     metadata={"connected": False},
                 )
@@ -600,7 +599,7 @@ class KubernetesExecutor(BaseExecutor):
 
             return InfrastructureState(
                 executor_type=self.executor_type,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 instance_count=deployment_status.replicas,
                 healthy_count=deployment_status.ready_replicas,
                 unhealthy_count=deployment_status.unavailable_replicas,
@@ -616,7 +615,7 @@ class KubernetesExecutor(BaseExecutor):
             logger.error("Failed to get Kubernetes state", error=str(e))
             return InfrastructureState(
                 executor_type=self.executor_type,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
                 instance_count=0,
                 metadata={"error": str(e)},
             )

@@ -11,8 +11,9 @@ Features:
 
 import asyncio
 import json
+from collections.abc import Callable, Coroutine
 from datetime import datetime
-from typing import Any, Callable, Coroutine
+from typing import Any
 
 from aiokafka import AIOKafkaConsumer, TopicPartition
 from aiokafka.errors import KafkaConnectionError, KafkaError
@@ -234,7 +235,7 @@ class MetricsConsumer:
                 max_records=max_records,
             )
 
-            for tp, records in data.items():
+            for _tp, records in data.items():
                 for record in records:
                     messages.append(record.value)
                     self._messages_processed += 1

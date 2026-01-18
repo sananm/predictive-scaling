@@ -11,7 +11,7 @@ Uses horizon-specific weights and handles overlapping predictions.
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -20,7 +20,7 @@ import pandas as pd
 
 from src.utils.logging import get_logger
 
-from .base import BaseModel, PredictionResult
+from .base import PredictionResult
 from .ensemble import MediumTermModel
 from .prophet_model import LongTermModel
 from .transformer import ShortTermModel

@@ -11,7 +11,7 @@ Responsibilities:
 import json
 from collections import defaultdict
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -172,7 +172,7 @@ class PredictionCalibrator:
             actual_value: Actual observed value
             timestamp: Timestamp of the observation (default: now)
         """
-        timestamp = timestamp or datetime.now(timezone.utc)
+        timestamp = timestamp or datetime.now(UTC)
 
         sample = CalibrationSample(
             timestamp=timestamp,
@@ -259,7 +259,7 @@ class PredictionCalibrator:
                 empirical_coverage=0.0,
                 calibration_factor=1.0,
                 n_samples=len(samples),
-                last_updated=self._last_calibration.get(horizon_group, datetime.now(timezone.utc)),
+                last_updated=self._last_calibration.get(horizon_group, datetime.now(UTC)),
                 is_calibrated=False,
             )
 
@@ -272,7 +272,7 @@ class PredictionCalibrator:
             empirical_coverage=empirical_coverage,
             calibration_factor=calibration_factor,
             n_samples=len(samples),
-            last_updated=self._last_calibration.get(horizon_group, datetime.now(timezone.utc)),
+            last_updated=self._last_calibration.get(horizon_group, datetime.now(UTC)),
             is_calibrated=True,
         )
 
@@ -316,7 +316,7 @@ class PredictionCalibrator:
             return
 
         last_cal = self._last_calibration.get(horizon_group)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         # Check time-based trigger
         if last_cal:
@@ -369,7 +369,7 @@ class PredictionCalibrator:
         )
 
         self._calibration_factors[horizon_group] = float(new_factor)
-        self._last_calibration[horizon_group] = datetime.now(timezone.utc)
+        self._last_calibration[horizon_group] = datetime.now(UTC)
 
         logger.info(
             "Recalibrated",

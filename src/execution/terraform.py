@@ -11,10 +11,9 @@ Responsibilities:
 
 import asyncio
 import json
-import os
 import tempfile
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -180,7 +179,7 @@ class TerraformExecutor(BaseExecutor):
         Returns:
             ExecutionResult with status
         """
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
 
         # Store previous state for rollback
         try:
@@ -198,7 +197,7 @@ class TerraformExecutor(BaseExecutor):
                         action_id=action.action_id,
                         status=ExecutionStatus.FAILED,
                         started_at=started_at,
-                        completed_at=datetime.now(timezone.utc),
+                        completed_at=datetime.now(UTC),
                         previous_state=previous_state,
                         error_message="Terraform initialization failed",
                     )
@@ -214,7 +213,7 @@ class TerraformExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.FAILED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     error_message=f"Terraform plan failed: {plan_result.error_message}",
                 )
@@ -225,7 +224,7 @@ class TerraformExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.FAILED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     error_message="Plan failed safety checks",
                     metadata={"plan": plan_result.to_dict()},
@@ -238,7 +237,7 @@ class TerraformExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.COMPLETED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     current_state=previous_state,
                     metadata={"no_changes": True},
@@ -261,7 +260,7 @@ class TerraformExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.FAILED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     error_message=f"Terraform apply failed: {apply_result.error_message}",
                     rollback_available=True,
@@ -273,7 +272,7 @@ class TerraformExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.COMPLETED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 current_state=current_state,
                 metadata={
@@ -298,7 +297,7 @@ class TerraformExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.FAILED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 error_message=str(e),
                 rollback_available=True,
@@ -553,9 +552,9 @@ class TerraformExecutor(BaseExecutor):
 
             return result
 
-        except asyncio.TimeoutError:
+        except TimeoutError as err:
             process.kill()
-            raise TimeoutError(f"Terraform command timed out: {' '.join(args)}")
+            raise TimeoutError(f"Terraform command timed out: {' '.join(args)}") from err
 
     async def rollback(self, action_id: str) -> RollbackResult:
         """Rollback by applying previous state."""
@@ -663,7 +662,7 @@ class TerraformExecutor(BaseExecutor):
 
                 return InfrastructureState(
                     executor_type=self.executor_type,
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     instance_count=instance_count,
                     healthy_count=instance_count,
                     metadata={"state_version": state_data.get("format_version")},
@@ -674,7 +673,7 @@ class TerraformExecutor(BaseExecutor):
 
         return InfrastructureState(
             executor_type=self.executor_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=0,
             metadata={"error": "Failed to read state"},
         )

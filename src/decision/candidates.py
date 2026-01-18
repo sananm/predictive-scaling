@@ -10,11 +10,12 @@ Responsibilities:
 """
 
 from dataclasses import dataclass, field
+from datetime import UTC
 from typing import Any
 
 import numpy as np
 
-from src.decision.capacity_model import CapacityModel, CapacityConfig
+from src.decision.capacity_model import CapacityConfig, CapacityModel
 from src.decision.cost_model import (
     CloudProvider,
     CostEstimate,
@@ -186,7 +187,7 @@ class CandidateGenerator:
         Returns:
             CandidateSet with ranked candidates
         """
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         candidates = []
 
@@ -223,7 +224,7 @@ class CandidateGenerator:
         return CandidateSet(
             candidates=candidates,
             target_rps=target_rps,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             total_generated=len(candidates),
             total_feasible=total_feasible,
         )
@@ -416,12 +417,12 @@ class CandidateGenerator:
 
             filtered.append(candidate)
 
-        from datetime import datetime, timezone
+        from datetime import datetime
 
         return CandidateSet(
             candidates=filtered,
             target_rps=candidate_set.target_rps,
-            generated_at=datetime.now(timezone.utc).isoformat(),
+            generated_at=datetime.now(UTC).isoformat(),
             total_generated=len(filtered),
             total_feasible=len(filtered),
         )

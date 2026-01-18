@@ -5,7 +5,7 @@ Queries Prometheus for application metrics like request rate,
 latency, CPU/memory utilization, etc.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
 import httpx
@@ -187,7 +187,7 @@ class PrometheusCollector(BaseCollector):
 
                 if len(value_data) >= 2:
                     timestamp = datetime.fromtimestamp(
-                        float(value_data[0]), tz=timezone.utc
+                        float(value_data[0]), tz=UTC
                     )
                     try:
                         value = float(value_data[1])
@@ -206,7 +206,7 @@ class PrometheusCollector(BaseCollector):
         elif result_type == "scalar":
             # Scalar result: single value
             if len(results) >= 2:
-                timestamp = datetime.fromtimestamp(float(results[0]), tz=timezone.utc)
+                timestamp = datetime.fromtimestamp(float(results[0]), tz=UTC)
                 try:
                     value = float(results[1])
                 except (ValueError, TypeError):

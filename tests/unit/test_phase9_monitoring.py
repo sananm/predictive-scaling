@@ -10,19 +10,12 @@ Tests cover:
 
 import asyncio
 import tempfile
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 from prometheus_client import CollectorRegistry
 
-from src.monitoring.metrics import (
-    MetricCategory,
-    ScalingMetrics,
-    get_metrics,
-    init_metrics,
-)
 from src.monitoring.alerts import (
     Alert,
     AlertCategory,
@@ -42,12 +35,14 @@ from src.monitoring.audit import (
 from src.monitoring.health import (
     ComponentType,
     HealthCheck,
-    HealthCheckResult,
     HealthChecker,
+    HealthCheckResult,
     HealthStatus,
     SystemHealth,
 )
-
+from src.monitoring.metrics import (
+    ScalingMetrics,
+)
 
 # =============================================================================
 # Prometheus Metrics Tests
@@ -303,7 +298,7 @@ class TestAlert:
             state=AlertState.RESOLVED,
             labels={},
             annotations={},
-            resolved_at=datetime.now(timezone.utc),
+            resolved_at=datetime.now(UTC),
         )
 
         data = alert.to_dict()
@@ -445,7 +440,7 @@ class TestAuditEvent:
         event = AuditEvent(
             event_id="evt-001",
             event_type=AuditEventType.DECISION_APPROVED,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             actor_type=AuditActor.USER,
             actor_id="user-123",
             service_name="api",
@@ -463,7 +458,7 @@ class TestAuditEvent:
         event = AuditEvent(
             event_id="evt-002",
             event_type=AuditEventType.EXECUTION_COMPLETED,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             actor_type=AuditActor.SYSTEM,
             actor_id="system",
             service_name="api",
@@ -484,7 +479,7 @@ class TestAuditEvent:
         event = AuditEvent(
             event_id="evt-003",
             event_type=AuditEventType.ALERT_FIRED,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             actor_type=AuditActor.SYSTEM,
             actor_id="system",
             service_name="api",
@@ -503,7 +498,7 @@ class TestAuditEvent:
         data = {
             "event_id": "evt-004",
             "event_type": "decision.rejected",
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "actor_type": "user",
             "actor_id": "admin",
             "action": "Rejected decision",
@@ -1017,7 +1012,7 @@ class TestSystemHealth:
         health = SystemHealth(
             status=HealthStatus.DEGRADED,
             components=components,
-            checked_at=datetime.now(timezone.utc),
+            checked_at=datetime.now(UTC),
         )
 
         assert health.healthy_count == 1
@@ -1028,7 +1023,7 @@ class TestSystemHealth:
         health = SystemHealth(
             status=HealthStatus.HEALTHY,
             components=[],
-            checked_at=datetime.now(timezone.utc),
+            checked_at=datetime.now(UTC),
             version="1.0.0",
             uptime_seconds=3600,
         )
@@ -1051,8 +1046,6 @@ class TestModuleImports:
         """Test importing metrics module."""
         from src.monitoring import (
             ScalingMetrics,
-            get_metrics,
-            init_metrics,
         )
 
         assert ScalingMetrics is not None
@@ -1061,9 +1054,7 @@ class TestModuleImports:
         """Test importing alerts module."""
         from src.monitoring import (
             AlertManager,
-            AlertRule,
             AlertSeverity,
-            Alert,
         )
 
         assert AlertManager is not None
@@ -1072,9 +1063,8 @@ class TestModuleImports:
     def test_import_audit(self):
         """Test importing audit module."""
         from src.monitoring import (
-            AuditLogger,
-            AuditEvent,
             AuditEventType,
+            AuditLogger,
         )
 
         assert AuditLogger is not None
@@ -1084,7 +1074,6 @@ class TestModuleImports:
         """Test importing health module."""
         from src.monitoring import (
             HealthChecker,
-            HealthCheck,
             HealthStatus,
         )
 

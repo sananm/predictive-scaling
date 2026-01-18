@@ -10,7 +10,7 @@ Provides:
 import json
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -194,7 +194,7 @@ class BaseModel(ABC):
             model_id=self._model_id,
             model_name=name,
             model_version=version,
-            created_at=datetime.now(timezone.utc),
+            created_at=datetime.now(UTC),
             horizon_minutes=horizon_minutes,
         )
 
@@ -372,7 +372,7 @@ class BaseModel(ABC):
         feature_importance: dict[str, float] | None = None,
     ) -> None:
         """Update model metadata after training."""
-        self._metadata.trained_at = datetime.now(timezone.utc)
+        self._metadata.trained_at = datetime.now(UTC)
 
         if training_metrics:
             self._metadata.training_metrics.update(training_metrics)

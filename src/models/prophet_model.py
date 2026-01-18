@@ -267,7 +267,7 @@ class LongTermModel(BaseModel):
             horizon_days = self.horizon_minutes // 1440
 
         # Create future dataframe
-        last_date = X.index.max()
+        X.index.max()
         future = self._prophet.make_future_dataframe(
             periods=horizon_days * 24 * 60,  # Minutes
             freq="T",  # Minute frequency

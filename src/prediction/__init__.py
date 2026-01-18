@@ -7,9 +7,9 @@ This module provides:
 - PredictionCalibrator: Calibrates prediction intervals for target coverage
 """
 
+from .calibration import CalibrationResult, PredictionCalibrator
 from .orchestrator import PredictorOrchestrator
 from .uncertainty import UncertaintyQuantifier, UncertaintyResult
-from .calibration import PredictionCalibrator, CalibrationResult
 
 __all__ = [
     "PredictorOrchestrator",

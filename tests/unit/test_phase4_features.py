@@ -12,11 +12,8 @@ Tests for:
 - Feature orchestrator
 """
 
-from datetime import datetime, timedelta, timezone
 
-import numpy as np
 import pandas as pd
-import pytest
 
 
 class TestFeatureConfig:
@@ -274,8 +271,8 @@ class TestBusinessFeatures:
 
     def test_business_features_extraction(self, time_index, sample_business_events):
         """Test business feature extraction."""
-        from src.features.config import FeatureConfig
         from src.features.business_features import BusinessFeatureExtractor
+        from src.features.config import FeatureConfig
 
         config = FeatureConfig()
         extractor = BusinessFeatureExtractor(config)

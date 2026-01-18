@@ -17,14 +17,6 @@ from src.execution.base import (
     ScalingAction,
     VerificationResult,
 )
-from src.execution.verification import (
-    VerificationCheck,
-    VerificationCheckType,
-    VerificationConfig,
-    VerificationSession,
-    VerificationStatus,
-    VerificationSystem,
-)
 from src.execution.rollback import (
     RollbackManager,
     RollbackPolicy,
@@ -32,6 +24,14 @@ from src.execution.rollback import (
     RollbackRecord,
     RollbackRequest,
     RollbackStrategy,
+)
+from src.execution.verification import (
+    VerificationCheck,
+    VerificationCheckType,
+    VerificationConfig,
+    VerificationSession,
+    VerificationStatus,
+    VerificationSystem,
 )
 
 # Optional imports - these may not be available in all environments

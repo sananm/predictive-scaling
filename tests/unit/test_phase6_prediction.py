@@ -7,13 +7,9 @@ Tests for:
 - Prediction Calibration
 """
 
-from datetime import datetime, timedelta, timezone
-from pathlib import Path
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
 
 import numpy as np
-import pytest
 
 
 class TestPredictorOrchestrator:
@@ -45,7 +41,7 @@ class TestPredictorOrchestrator:
 
     def test_orchestrator_initialization(self):
         """Test PredictorOrchestrator initialization."""
-        from src.prediction.orchestrator import PredictorOrchestrator, OrchestratorConfig
+        from src.prediction.orchestrator import OrchestratorConfig, PredictorOrchestrator
 
         config = OrchestratorConfig()
         orchestrator = PredictorOrchestrator(config=config)
@@ -63,7 +59,7 @@ class TestPredictorOrchestrator:
         """Test PredictionOutput creation."""
         from src.prediction.orchestrator import PredictionOutput
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         output = PredictionOutput(
             timestamp=now,
             service_name="test-service",
@@ -81,7 +77,7 @@ class TestPredictorOrchestrator:
         """Test PredictionOutput to_dict method."""
         from src.prediction.orchestrator import PredictionOutput
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         output = PredictionOutput(
             timestamp=now,
             service_name="test-service",
@@ -144,7 +140,7 @@ class TestUncertaintyQuantifier:
 
     def test_quantifier_initialization(self):
         """Test UncertaintyQuantifier initialization."""
-        from src.prediction.uncertainty import UncertaintyQuantifier, UncertaintyConfig
+        from src.prediction.uncertainty import UncertaintyConfig, UncertaintyQuantifier
 
         config = UncertaintyConfig()
         quantifier = UncertaintyQuantifier(config=config)
@@ -153,13 +149,13 @@ class TestUncertaintyQuantifier:
 
     def test_quantify_single_model(self):
         """Test uncertainty quantification with single model."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
         from src.models.base import PredictionResult
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
 
         pred = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([90.0]),
             p50=np.array([100.0]),
             p90=np.array([110.0]),
@@ -176,13 +172,13 @@ class TestUncertaintyQuantifier:
 
     def test_quantify_multiple_models(self):
         """Test uncertainty quantification with multiple models."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
         from src.models.base import PredictionResult
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
 
         pred1 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([90.0]),
             p50=np.array([100.0]),
             p90=np.array([110.0]),
@@ -192,7 +188,7 @@ class TestUncertaintyQuantifier:
         )
 
         pred2 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([85.0]),
             p50=np.array([95.0]),
             p90=np.array([105.0]),
@@ -226,14 +222,14 @@ class TestUncertaintyQuantifier:
 
     def test_model_agreement_high(self):
         """Test high model agreement when models agree."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
         from src.models.base import PredictionResult
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
 
         # Very similar predictions
         pred1 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([90.0]),
             p50=np.array([100.0]),
             p90=np.array([110.0]),
@@ -243,7 +239,7 @@ class TestUncertaintyQuantifier:
         )
 
         pred2 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([91.0]),
             p50=np.array([101.0]),
             p90=np.array([111.0]),
@@ -261,14 +257,14 @@ class TestUncertaintyQuantifier:
 
     def test_model_agreement_low(self):
         """Test low model agreement when models disagree."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
         from src.models.base import PredictionResult
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
 
         # Very different predictions
         pred1 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([50.0]),
             p50=np.array([100.0]),
             p90=np.array([150.0]),
@@ -278,7 +274,7 @@ class TestUncertaintyQuantifier:
         )
 
         pred2 = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([150.0]),
             p50=np.array([200.0]),
             p90=np.array([250.0]),
@@ -318,13 +314,13 @@ class TestUncertaintyQuantifier:
 
     def test_get_model_contribution(self):
         """Test getting model contribution details."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
         from src.models.base import PredictionResult
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
 
         pred = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([90.0]),
             p50=np.array([100.0]),
             p90=np.array([110.0]),
@@ -377,7 +373,7 @@ class TestPredictionCalibrator:
 
     def test_calibrator_initialization(self):
         """Test PredictionCalibrator initialization."""
-        from src.prediction.calibration import PredictionCalibrator, CalibrationConfig
+        from src.prediction.calibration import CalibrationConfig, PredictionCalibrator
 
         config = CalibrationConfig()
         calibrator = PredictionCalibrator(config=config)
@@ -433,7 +429,7 @@ class TestPredictionCalibrator:
         from src.prediction.calibration import CalibrationSample
 
         sample = CalibrationSample(
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             horizon_minutes=15,
             predicted_p10=90.0,
             predicted_p50=100.0,
@@ -449,7 +445,7 @@ class TestPredictionCalibrator:
         from src.prediction.calibration import CalibrationSample
 
         sample = CalibrationSample(
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             horizon_minutes=15,
             predicted_p10=90.0,
             predicted_p50=100.0,
@@ -470,7 +466,7 @@ class TestPredictionCalibrator:
             empirical_coverage=0.85,
             calibration_factor=1.1,
             n_samples=100,
-            last_updated=datetime.now(timezone.utc),
+            last_updated=datetime.now(UTC),
             is_calibrated=True,
         )
 
@@ -562,11 +558,11 @@ class TestPredictionModuleExports:
     def test_all_exports_available(self):
         """Test that all expected exports are available."""
         from src.prediction import (
+            CalibrationResult,
+            PredictionCalibrator,
             PredictorOrchestrator,
             UncertaintyQuantifier,
             UncertaintyResult,
-            PredictionCalibrator,
-            CalibrationResult,
         )
 
         assert PredictorOrchestrator is not None
@@ -581,16 +577,16 @@ class TestPredictionIntegration:
 
     def test_uncertainty_to_calibrator_flow(self):
         """Test flow from uncertainty to calibrator."""
-        from src.prediction.uncertainty import UncertaintyQuantifier
-        from src.prediction.calibration import PredictionCalibrator
         from src.models.base import PredictionResult
+        from src.prediction.calibration import PredictionCalibrator
+        from src.prediction.uncertainty import UncertaintyQuantifier
 
         quantifier = UncertaintyQuantifier()
         calibrator = PredictionCalibrator()
 
         # Generate prediction
         pred = PredictionResult(
-            timestamps=[datetime.now(timezone.utc)],
+            timestamps=[datetime.now(UTC)],
             p10=np.array([90.0]),
             p50=np.array([100.0]),
             p90=np.array([110.0]),

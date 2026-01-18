@@ -9,9 +9,8 @@ Tests for:
 - External signals collector
 """
 
-from datetime import datetime, timezone
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
+from datetime import UTC, datetime
+from unittest.mock import MagicMock
 
 import pytest
 
@@ -67,7 +66,7 @@ class TestPrometheusCollector:
 
     def test_prometheus_queries_defined(self):
         """Test that Prometheus queries are defined."""
-        from src.collectors.prometheus import PrometheusCollector, DEFAULT_QUERIES
+        from src.collectors.prometheus import PrometheusCollector
 
         collector = PrometheusCollector(service_name="test")
 
@@ -229,11 +228,12 @@ class TestBusinessContextCollector:
     def test_add_event(self):
         """Test manually adding an event."""
         from datetime import timedelta
+
         from src.collectors.business import BusinessContextCollector
 
         collector = BusinessContextCollector(service_name="test")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         collector.add_event(
             event_type="marketing_campaign",
             name="Test Campaign",
@@ -246,7 +246,7 @@ class TestBusinessContextCollector:
 
     def test_estimate_impact(self):
         """Test impact estimation for event types."""
-        from src.collectors.business import BusinessContextCollector, DEFAULT_IMPACT_MULTIPLIERS
+        from src.collectors.business import DEFAULT_IMPACT_MULTIPLIERS, BusinessContextCollector
 
         collector = BusinessContextCollector(service_name="test")
 

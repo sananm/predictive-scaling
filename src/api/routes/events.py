@@ -71,7 +71,7 @@ def _event_to_response(event: Any) -> EventResponse:
         expected_impact_multiplier=event.expected_impact_multiplier,
         actual_impact_multiplier=event.actual_impact_multiplier,
         source=event.source,
-        metadata=event.metadata,
+        metadata=event.event_metadata,
         is_active=event.is_active,
     )
 
@@ -158,7 +158,7 @@ async def create_event(
         end_time=event.end_time,
         expected_impact_multiplier=event.expected_impact_multiplier,
         source=event.source,
-        metadata=event.metadata,
+        event_metadata=event.metadata,
         is_active=True,
     )
 
@@ -182,7 +182,7 @@ async def update_event(
         end_time=event.end_time,
         expected_impact_multiplier=event.expected_impact_multiplier,
         source=event.source,
-        metadata=event.metadata,
+        event_metadata=event.metadata,
     )
 
     if not updated:

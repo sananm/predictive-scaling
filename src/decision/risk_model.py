@@ -9,11 +9,9 @@ Responsibilities:
 """
 
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from enum import Enum
 from typing import Any
-
-import numpy as np
 
 from src.utils.logging import get_logger
 
@@ -94,7 +92,7 @@ class RiskAssessment:
     factors: list[RiskFactor]
     is_acceptable: bool
     requires_approval: bool
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     recommendations: list[str] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
@@ -372,7 +370,7 @@ class RiskModel:
     ) -> RiskFactor:
         """Assess risk from scaling stability perspective."""
         # Check recent scaling actions
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         recent_actions = [
             a for a in self._recent_scaling_actions
             if now - a < self.config.min_time_between_scales
@@ -510,7 +508,7 @@ class RiskModel:
 
     def record_scaling_action(self) -> None:
         """Record a scaling action for stability tracking."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         self._recent_scaling_actions.append(now)
 
         # Clean up old actions

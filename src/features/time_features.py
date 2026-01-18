@@ -193,7 +193,7 @@ class HolidayFeatureExtractor(BaseExtractor):
         features = pd.DataFrame(index=df.index)
 
         # Check each date against holidays
-        month_day = list(zip(df.index.month, df.index.day))
+        month_day = list(zip(df.index.month, df.index.day, strict=False))
 
         # Is it a holiday?
         features["is_holiday"] = pd.Series(

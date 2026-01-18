@@ -12,7 +12,7 @@ Responsibilities:
 
 import asyncio
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
@@ -283,7 +283,7 @@ class PredictorOrchestrator:
         if not self._initialized:
             await self.initialize()
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         try:
             # Get or compute features
@@ -315,7 +315,7 @@ class PredictorOrchestrator:
                     return_exceptions=True,
                 )
 
-                for (model_name, _), result in zip(tasks, results):
+                for (model_name, _), result in zip(tasks, results, strict=False):
                     if isinstance(result, Exception):
                         logger.error(f"Prediction failed for {model_name}", error=str(result))
                     else:
@@ -455,7 +455,7 @@ class PredictorOrchestrator:
         if not self._metrics_repo:
             raise RuntimeError("Metrics repository not configured")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         start_time = now - timedelta(minutes=self.config.max_history_minutes)
 
         # Fetch metrics from database

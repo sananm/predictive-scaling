@@ -10,58 +10,41 @@ Tests:
 - Decision Engine
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 import pytest
 
 from src.decision import (
-    # Cost Model
-    CloudProvider,
-    CostEstimate,
-    CostModel,
-    InfrastructureConfig,
-    InstancePricing,
-    PricingType,
+    # Candidates
+    CandidateGenerator,
     # Capacity Model
     CapacityConfig,
-    CapacityEstimate,
     CapacityModel,
-    InstanceCapacity,
-    ScalingRequirement,
-    # Risk Model
-    RiskAssessment,
-    RiskCategory,
-    RiskConfig,
-    RiskFactor,
-    RiskLevel,
-    RiskModel,
+    # Cost Model
+    CloudProvider,
+    CostModel,
+    # Decision Engine
+    DecisionEngine,
+    DecisionStatus,
     # Strategies
     EmergencyScaleStrategy,
     GradualRampStrategy,
+    InfrastructureConfig,
+    InfrastructureState,
+    InstanceCapacity,
+    InstancePricing,
     MaintainStrategy,
+    PredictionInput,
     PreemptiveBurstStrategy,
+    PricingType,
+    RiskLevel,
+    RiskModel,
     ScaleDownStrategy,
-    ScalingPlan,
-    ScalingStep,
+    ScalingCandidate,
     StrategyConfig,
     StrategySelector,
     StrategyType,
-    # Candidates
-    CandidateConfig,
-    CandidateGenerator,
-    CandidateSet,
-    ScalingCandidate,
-    # Decision Engine
-    CandidateScore,
-    DecisionEngine,
-    DecisionEngineConfig,
-    DecisionStatus,
-    InfrastructureState,
-    PredictionInput,
-    ScalingDecision,
-    VerificationCriteria,
 )
-
 
 # ============================================================================
 # Cost Model Tests
@@ -403,7 +386,7 @@ class TestScalingStrategies:
         """Test preemptive burst strategy."""
         strategy = PreemptiveBurstStrategy()
         config = StrategyConfig()
-        spike_time = datetime.now(timezone.utc) + timedelta(minutes=5)
+        spike_time = datetime.now(UTC) + timedelta(minutes=5)
         plan = strategy.create_plan(
             current_instances=5,
             target_instances=15,
@@ -628,7 +611,7 @@ class TestDecisionEngine:
                 p50=6000,
                 p90=7500,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -657,7 +640,7 @@ class TestDecisionEngine:
                 p50=1000,
                 p90=1200,
                 confidence=0.9,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -686,7 +669,7 @@ class TestDecisionEngine:
                 p50=3000,
                 p90=3200,
                 confidence=0.95,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -714,7 +697,7 @@ class TestDecisionEngine:
                 p50=6000,
                 p90=7000,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -743,7 +726,7 @@ class TestDecisionEngine:
                 p50=6000,
                 p90=7000,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -772,7 +755,7 @@ class TestDecisionEngine:
                 p50=7000,
                 p90=8000,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -802,7 +785,7 @@ class TestDecisionEngine:
                 p50=7000,
                 p90=8000,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -832,7 +815,7 @@ class TestDecisionEngine:
                 p50=7000,
                 p90=8000,
                 confidence=0.8,
-                timestamp=datetime.now(timezone.utc),
+                timestamp=datetime.now(UTC),
             ),
         ]
 
@@ -862,8 +845,6 @@ class TestModuleExports:
         from src.decision import (
             CloudProvider,
             CostModel,
-            InfrastructureConfig,
-            InstancePricing,
         )
         assert CloudProvider is not None
         assert CostModel is not None
@@ -871,9 +852,7 @@ class TestModuleExports:
     def test_capacity_model_exports(self):
         """Test capacity model exports."""
         from src.decision import (
-            CapacityConfig,
             CapacityModel,
-            InstanceCapacity,
         )
         assert CapacityConfig is not None
         assert CapacityModel is not None
@@ -881,8 +860,6 @@ class TestModuleExports:
     def test_risk_model_exports(self):
         """Test risk model exports."""
         from src.decision import (
-            RiskAssessment,
-            RiskCategory,
             RiskLevel,
             RiskModel,
         )
@@ -892,7 +869,6 @@ class TestModuleExports:
     def test_strategy_exports(self):
         """Test strategy exports."""
         from src.decision import (
-            ScalingPlan,
             StrategySelector,
             StrategyType,
         )
@@ -903,8 +879,6 @@ class TestModuleExports:
         """Test candidate exports."""
         from src.decision import (
             CandidateGenerator,
-            CandidateSet,
-            ScalingCandidate,
         )
         assert CandidateGenerator is not None
         assert ScalingCandidate is not None
@@ -914,8 +888,6 @@ class TestModuleExports:
         from src.decision import (
             DecisionEngine,
             DecisionStatus,
-            InfrastructureState,
-            ScalingDecision,
         )
         assert DecisionEngine is not None
         assert DecisionStatus is not None

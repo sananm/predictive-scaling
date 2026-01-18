@@ -10,7 +10,7 @@ Responsibilities:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -171,7 +171,7 @@ class VerificationResult:
     healthy_count: int
     latency_ok: bool = True
     error_rate_ok: bool = True
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
     metadata: dict[str, Any] = field(default_factory=dict)
 
     def to_dict(self) -> dict[str, Any]:
@@ -200,7 +200,7 @@ class RollbackResult:
     previous_state: InfrastructureState
     restored_state: InfrastructureState | None = None
     error_message: str | None = None
-    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
@@ -367,7 +367,7 @@ class MockExecutor(BaseExecutor):
 
     async def scale(self, action: ScalingAction) -> ExecutionResult:
         """Mock scale operation."""
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
 
         # Store rollback state
         previous_state = await self.get_current_state()
@@ -378,7 +378,7 @@ class MockExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.FAILED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 error_message="Mock failure",
             )
@@ -393,7 +393,7 @@ class MockExecutor(BaseExecutor):
             action_id=action.action_id,
             status=ExecutionStatus.COMPLETED,
             started_at=started_at,
-            completed_at=datetime.now(timezone.utc),
+            completed_at=datetime.now(UTC),
             previous_state=previous_state,
             current_state=current_state,
         )
@@ -474,7 +474,7 @@ class MockExecutor(BaseExecutor):
         """Get mock current state."""
         return InfrastructureState(
             executor_type=self.executor_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=self._current_count,
             instance_type=self._instance_type,
             healthy_count=self._current_count,

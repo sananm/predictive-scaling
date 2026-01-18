@@ -9,10 +9,11 @@ Responsibilities:
 """
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from src.utils.logging import get_logger
 
@@ -51,7 +52,7 @@ class HealthCheckResult:
     message: str
     latency_ms: float | None = None
     details: dict[str, Any] = field(default_factory=dict)
-    checked_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    checked_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     error: str | None = None
 
     @property
@@ -88,7 +89,7 @@ class HealthCheck:
 
     async def execute(self) -> HealthCheckResult:
         """Execute the health check."""
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
 
         try:
             # Run check with timeout
@@ -106,7 +107,7 @@ class HealthCheck:
                 )
 
             latency_ms = (
-                datetime.now(timezone.utc) - start_time
+                datetime.now(UTC) - start_time
             ).total_seconds() * 1000
 
             # Handle result
@@ -134,7 +135,7 @@ class HealthCheck:
                 details=details,
             )
 
-        except asyncio.TimeoutError:
+        except TimeoutError:
             latency_ms = self.timeout_seconds * 1000
             return HealthCheckResult(
                 component_name=self.name,
@@ -147,7 +148,7 @@ class HealthCheck:
 
         except Exception as e:
             latency_ms = (
-                datetime.now(timezone.utc) - start_time
+                datetime.now(UTC) - start_time
             ).total_seconds() * 1000
             return HealthCheckResult(
                 component_name=self.name,
@@ -214,14 +215,14 @@ class HealthChecker:
         self._version = version
         self._checks: dict[str, HealthCheck] = {}
         self._results: dict[str, HealthCheckResult] = {}
-        self._started_at = datetime.now(timezone.utc)
+        self._started_at = datetime.now(UTC)
         self._running = False
         self._callbacks: list[Callable] = []
 
     @property
     def uptime_seconds(self) -> float:
         """Get system uptime in seconds."""
-        return (datetime.now(timezone.utc) - self._started_at).total_seconds()
+        return (datetime.now(UTC) - self._started_at).total_seconds()
 
     def add_check(self, check: HealthCheck) -> None:
         """Add a health check."""
@@ -313,7 +314,7 @@ class HealthChecker:
         return SystemHealth(
             status=overall_status,
             components=results,
-            checked_at=datetime.now(timezone.utc),
+            checked_at=datetime.now(UTC),
             version=self._version,
             uptime_seconds=self.uptime_seconds,
         )
@@ -395,7 +396,7 @@ class HealthChecker:
                     last_result = self._results.get(name)
                     if last_result:
                         elapsed = (
-                            datetime.now(timezone.utc) - last_result.checked_at
+                            datetime.now(UTC) - last_result.checked_at
                         ).total_seconds()
                         if elapsed < check.interval_seconds:
                             continue

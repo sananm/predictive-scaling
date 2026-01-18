@@ -10,7 +10,7 @@ Responsibilities:
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
 from typing import Any
@@ -239,7 +239,7 @@ class AuditLogger:
         event = AuditEvent(
             event_id=str(uuid4()),
             event_type=event_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             actor_type=actor_type,
             actor_id=actor_id,
             service_name=service_name,

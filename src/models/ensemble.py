@@ -134,7 +134,7 @@ class GradientBoostingModel:
     def _configure_quantile(self) -> None:
         """Configure model for quantile regression."""
         if self.model_type == "xgboost":
-            self.params["objective"] = f"reg:quantileerror"
+            self.params["objective"] = "reg:quantileerror"
             self.params["quantile_alpha"] = self.quantile
         elif self.model_type == "lightgbm":
             self.params["objective"] = "quantile"
@@ -459,7 +459,7 @@ class MediumTermModel(BaseModel):
 
     def _aggregate_feature_importance(self) -> None:
         """Aggregate feature importance across all models."""
-        importance_sums = {name: 0.0 for name in self._feature_names}
+        importance_sums = dict.fromkeys(self._feature_names, 0.0)
         n_models = 0
 
         for horizon_models in self._models.values():

@@ -8,10 +8,7 @@ Tests for:
 """
 
 import json
-from datetime import datetime, timezone
-from typing import Any
-from unittest.mock import AsyncMock, MagicMock, patch
-from uuid import UUID
+from datetime import UTC, datetime
 
 import pytest
 
@@ -54,7 +51,7 @@ class TestMetricsProducer:
         encoder = DateTimeEncoder()
 
         # Test datetime encoding
-        dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=timezone.utc)
+        dt = datetime(2024, 1, 15, 10, 30, 0, tzinfo=UTC)
         result = encoder.default(dt)
         assert "2024-01-15" in result
 
@@ -71,7 +68,7 @@ class TestMetricsProducer:
         message = {
             "metric_name": "cpu_usage",
             "value": 75.5,
-            "timestamp": datetime.now(timezone.utc),
+            "timestamp": datetime.now(UTC),
         }
 
         serialized = serialize_message(message)
@@ -424,8 +421,8 @@ class TestStreamingIntegration:
 
     def test_producer_consumer_topic_alignment(self):
         """Test that producer and consumer can use same topics."""
-        from src.streaming.producer import MetricsProducer
         from src.streaming.consumer import MetricsConsumer
+        from src.streaming.producer import MetricsProducer
 
         topic = "metrics.raw"
 
@@ -437,14 +434,14 @@ class TestStreamingIntegration:
     @pytest.mark.asyncio
     async def test_processor_pipeline(self):
         """Test processor pipeline pattern."""
-        from src.streaming.processors import MetricsProcessor, FeatureProcessor
+        from src.streaming.processors import FeatureProcessor, MetricsProcessor
 
         metrics_processor = MetricsProcessor()
         feature_processor = FeatureProcessor()
 
         # Simulate message flow
         message = {
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
             "service_name": "test",
             "metric_name": "cpu",
             "value": 75.5,

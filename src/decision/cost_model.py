@@ -11,7 +11,7 @@ Responsibilities:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
@@ -49,7 +49,7 @@ class InstancePricing:
     spot_hourly: float | None = None
     reserved_hourly: float | None = None
     spot_interruption_rate: float = 0.05  # Historical interruption probability
-    last_updated: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    last_updated: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     @property
     def spot_discount(self) -> float:

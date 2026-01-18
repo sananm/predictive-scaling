@@ -10,18 +10,16 @@ Responsibilities:
 
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
 from enum import Enum
-from typing import Any
 
 from prometheus_client import (
+    CONTENT_TYPE_LATEST,
+    CollectorRegistry,
     Counter,
     Gauge,
     Histogram,
     Info,
-    CollectorRegistry,
     generate_latest,
-    CONTENT_TYPE_LATEST,
 )
 
 from src.utils.logging import get_logger

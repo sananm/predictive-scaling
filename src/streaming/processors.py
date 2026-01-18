@@ -7,10 +7,9 @@ Processors:
 - PredictionTrigger: Trigger predictions when sufficient data arrives
 """
 
-import asyncio
 from abc import ABC, abstractmethod
 from collections import defaultdict
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from config.settings import get_settings
@@ -73,7 +72,7 @@ class BaseProcessor(ABC):
                 await self.process(message)
                 successful += 1
                 self._processed_count += 1
-                self._last_processed = datetime.now(timezone.utc)
+                self._last_processed = datetime.now(UTC)
 
             except Exception as e:
                 failed += 1
@@ -138,7 +137,7 @@ class MetricsProcessor(BaseProcessor):
         # Aggregation buffer
         self._buffer: list[dict[str, Any]] = []
         self._buffer_size = 100
-        self._last_flush = datetime.now(timezone.utc)
+        self._last_flush = datetime.now(UTC)
         self._flush_interval = timedelta(seconds=10)
 
     async def process(self, message: dict[str, Any]) -> None:
@@ -212,7 +211,7 @@ class MetricsProcessor(BaseProcessor):
 
     def _should_flush(self) -> bool:
         """Check if buffer should be flushed based on time."""
-        return datetime.now(timezone.utc) - self._last_flush > self._flush_interval
+        return datetime.now(UTC) - self._last_flush > self._flush_interval
 
     async def _flush_buffer(self) -> None:
         """Flush buffered metrics to database."""
@@ -221,7 +220,7 @@ class MetricsProcessor(BaseProcessor):
 
         metrics_to_insert = self._buffer.copy()
         self._buffer.clear()
-        self._last_flush = datetime.now(timezone.utc)
+        self._last_flush = datetime.now(UTC)
 
         try:
             async with get_session() as session:
@@ -335,7 +334,7 @@ class FeatureProcessor(BaseProcessor):
         if last_time is None:
             return True
 
-        return datetime.now(timezone.utc) - last_time >= self.feature_interval
+        return datetime.now(UTC) - last_time >= self.feature_interval
 
     async def _compute_features(
         self,
@@ -344,7 +343,7 @@ class FeatureProcessor(BaseProcessor):
     ) -> None:
         """Compute and store features for a service."""
         self._metric_counts[service_name] = 0
-        self._last_feature_time[service_name] = datetime.now(timezone.utc)
+        self._last_feature_time[service_name] = datetime.now(UTC)
 
         if self._feature_callback is None:
             logger.warning("No feature callback set")
@@ -489,7 +488,7 @@ class PredictionTrigger(BaseProcessor):
             return True
 
         interval = self._intervals[horizon]
-        return datetime.now(timezone.utc) - last_time >= interval
+        return datetime.now(UTC) - last_time >= interval
 
     async def _trigger_prediction(
         self,
@@ -501,7 +500,7 @@ class PredictionTrigger(BaseProcessor):
         # Update last prediction time
         if service_name not in self._last_prediction:
             self._last_prediction[service_name] = {}
-        self._last_prediction[service_name][horizon] = datetime.now(timezone.utc)
+        self._last_prediction[service_name][horizon] = datetime.now(UTC)
 
         # Get callback
         callback = self._prediction_callbacks.get(horizon)
@@ -538,7 +537,7 @@ class PredictionTrigger(BaseProcessor):
             service_name: Service to predict for
             horizon: Specific horizon or None for all
         """
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
         horizons = [horizon] if horizon else list(self._intervals.keys())
 
         for h in horizons:

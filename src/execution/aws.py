@@ -9,8 +9,8 @@ Responsibilities:
 """
 
 import asyncio
-from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from typing import Any
 
 from src.execution.base import (
@@ -213,7 +213,7 @@ class AWSExecutor(BaseExecutor):
         Returns:
             ExecutionResult with status
         """
-        started_at = datetime.now(timezone.utc)
+        started_at = datetime.now(UTC)
 
         # Store previous state for rollback
         try:
@@ -231,7 +231,7 @@ class AWSExecutor(BaseExecutor):
                         action_id=action.action_id,
                         status=ExecutionStatus.FAILED,
                         started_at=started_at,
-                        completed_at=datetime.now(timezone.utc),
+                        completed_at=datetime.now(UTC),
                         previous_state=previous_state,
                         error_message="Failed to connect to AWS",
                     )
@@ -248,7 +248,7 @@ class AWSExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.FAILED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     error_message=f"Unknown scaling type: {self.aws_config.scaling_type}",
                 )
@@ -258,7 +258,7 @@ class AWSExecutor(BaseExecutor):
                     action_id=action.action_id,
                     status=ExecutionStatus.FAILED,
                     started_at=started_at,
-                    completed_at=datetime.now(timezone.utc),
+                    completed_at=datetime.now(UTC),
                     previous_state=previous_state,
                     error_message="Scaling operation failed",
                     rollback_available=True,
@@ -274,7 +274,7 @@ class AWSExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.COMPLETED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 current_state=current_state,
             )
@@ -295,7 +295,7 @@ class AWSExecutor(BaseExecutor):
                 action_id=action.action_id,
                 status=ExecutionStatus.FAILED,
                 started_at=started_at,
-                completed_at=datetime.now(timezone.utc),
+                completed_at=datetime.now(UTC),
                 previous_state=previous_state,
                 error_message=str(e),
                 rollback_available=True,
@@ -387,11 +387,11 @@ class AWSExecutor(BaseExecutor):
         self, target_count: int, timeout_seconds: float
     ) -> bool:
         """Wait for scaling operation to complete."""
-        start_time = datetime.now(timezone.utc)
+        start_time = datetime.now(UTC)
         timeout = timeout_seconds or self.aws_config.timeout_seconds
 
         while True:
-            elapsed = (datetime.now(timezone.utc) - start_time).total_seconds()
+            elapsed = (datetime.now(UTC) - start_time).total_seconds()
             if elapsed > timeout:
                 logger.warning("Scaling wait timeout", elapsed=elapsed)
                 return False
@@ -590,7 +590,7 @@ class AWSExecutor(BaseExecutor):
             if not await self.connect():
                 return InfrastructureState(
                     executor_type=self.executor_type,
-                    timestamp=datetime.now(timezone.utc),
+                    timestamp=datetime.now(UTC),
                     instance_count=0,
                     metadata={"connected": False},
                 )
@@ -601,7 +601,7 @@ class AWSExecutor(BaseExecutor):
                 if asg_status:
                     return InfrastructureState(
                         executor_type=self.executor_type,
-                        timestamp=datetime.now(timezone.utc),
+                        timestamp=datetime.now(UTC),
                         instance_count=asg_status.desired_capacity,
                         healthy_count=asg_status.healthy_instances,
                         unhealthy_count=asg_status.unhealthy_instances,
@@ -614,7 +614,7 @@ class AWSExecutor(BaseExecutor):
                 if ecs_status:
                     return InfrastructureState(
                         executor_type=self.executor_type,
-                        timestamp=datetime.now(timezone.utc),
+                        timestamp=datetime.now(UTC),
                         instance_count=ecs_status.desired_count,
                         healthy_count=ecs_status.running_count,
                         pending_count=ecs_status.pending_count,
@@ -626,7 +626,7 @@ class AWSExecutor(BaseExecutor):
 
         return InfrastructureState(
             executor_type=self.executor_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             instance_count=0,
             metadata={"error": "Failed to get state"},
         )

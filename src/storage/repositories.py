@@ -4,12 +4,13 @@ Async repository layer for database operations.
 Provides clean abstraction over SQLAlchemy for CRUD operations.
 """
 
-from datetime import datetime, timedelta
-from typing import Any, Generic, Sequence, TypeVar
+from collections.abc import Sequence
+from datetime import UTC, datetime, timedelta
+from typing import Any, Generic, TypeVar
 from uuid import UUID
 
 import pandas as pd
-from sqlalchemy import Select, delete, func, select, text
+from sqlalchemy import delete, func, select, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import (
@@ -401,11 +402,11 @@ class BusinessEventsRepository(BaseRepository[BusinessEvent]):
         at_time: datetime | None = None,
     ) -> Sequence[BusinessEvent]:
         """Get events that are currently active."""
-        now = at_time or datetime.utcnow()
+        now = at_time or datetime.now(UTC)
         result = await self.session.execute(
             select(BusinessEvent)
             .where(
-                BusinessEvent.is_active == True,
+                BusinessEvent.is_active,
                 BusinessEvent.start_time <= now,
                 BusinessEvent.end_time >= now,
             )
@@ -418,13 +419,13 @@ class BusinessEventsRepository(BaseRepository[BusinessEvent]):
         hours_ahead: int = 24,
     ) -> Sequence[BusinessEvent]:
         """Get events starting within the specified hours."""
-        now = datetime.utcnow()
+        now = datetime.now(UTC)
         future = now + timedelta(hours=hours_ahead)
 
         result = await self.session.execute(
             select(BusinessEvent)
             .where(
-                BusinessEvent.is_active == True,
+                BusinessEvent.is_active,
                 BusinessEvent.start_time >= now,
                 BusinessEvent.start_time <= future,
             )
@@ -561,7 +562,7 @@ class AlertLogsRepository(BaseRepository[AlertLog]):
         severity: str | None = None,
     ) -> Sequence[AlertLog]:
         """Get unacknowledged alerts."""
-        query = select(AlertLog).where(AlertLog.acknowledged == False)
+        query = select(AlertLog).where(not AlertLog.acknowledged)
         if severity:
             query = query.where(AlertLog.severity == severity)
         query = query.order_by(AlertLog.created_at.desc())
@@ -578,7 +579,7 @@ class AlertLogsRepository(BaseRepository[AlertLog]):
         return await self.update(
             id,
             acknowledged=True,
-            acknowledged_at=datetime.utcnow(),
+            acknowledged_at=datetime.now(UTC),
             acknowledged_by=acknowledged_by,
         )
 
@@ -591,6 +592,6 @@ class AlertLogsRepository(BaseRepository[AlertLog]):
         return await self.update(
             id,
             resolved=True,
-            resolved_at=datetime.utcnow(),
+            resolved_at=datetime.now(UTC),
             resolution_notes=resolution_notes,
         )

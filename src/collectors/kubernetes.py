@@ -5,13 +5,13 @@ Collects pod counts, replica status, resource usage, HPA status,
 and deployment events from a Kubernetes cluster.
 """
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from typing import Any
 
-from kubernetes import client, config
 from kubernetes.client.exceptions import ApiException
 
 from config.settings import get_settings
+from kubernetes import client, config
 from src.utils.logging import get_logger
 
 from .base import BaseCollector
@@ -110,7 +110,7 @@ class KubernetesCollector(BaseCollector):
         self._init_client()
 
         metrics = []
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         # Collect pod metrics
         pod_metrics = await self._collect_pod_metrics(timestamp)

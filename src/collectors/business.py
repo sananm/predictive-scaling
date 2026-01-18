@@ -14,12 +14,11 @@ Supports integrations with:
 - CI/CD systems
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 import httpx
 
-from src.storage.models import BusinessEvent
 from src.utils.logging import get_logger
 
 from .base import BaseCollector
@@ -99,7 +98,7 @@ class BusinessContextCollector(BaseCollector):
             List of metric dictionaries representing active/upcoming events
         """
         metrics = []
-        timestamp = datetime.now(timezone.utc)
+        timestamp = datetime.now(UTC)
 
         # Collect from all sources
         events = []
@@ -201,7 +200,7 @@ class BusinessContextCollector(BaseCollector):
         client = await self._get_client()
 
         try:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             time_min = now.isoformat()
             time_max = (now + timedelta(days=self.event_lookahead_days)).isoformat()
 
@@ -278,7 +277,7 @@ class BusinessContextCollector(BaseCollector):
 
     async def _get_cached_events(self) -> list[dict[str, Any]]:
         """Get events from cache or refresh if stale."""
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         if (
             self._cache_updated
@@ -326,7 +325,7 @@ class BusinessContextCollector(BaseCollector):
         }
 
         self._events_cache.append(event)
-        self._cache_updated = datetime.now(timezone.utc)
+        self._cache_updated = datetime.now(UTC)
 
         logger.info("Added business event", event_type=event_type, name=name)
 

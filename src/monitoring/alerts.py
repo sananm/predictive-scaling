@@ -9,10 +9,11 @@ Responsibilities:
 """
 
 import asyncio
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime
 from enum import Enum
-from typing import Any, Callable
+from typing import Any
 
 from src.utils.logging import get_logger
 
@@ -84,7 +85,7 @@ class Alert:
     labels: dict[str, str]
     annotations: dict[str, str]
     value: Any = None
-    started_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    started_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     fired_at: datetime | None = None
     resolved_at: datetime | None = None
     last_evaluated_at: datetime | None = None
@@ -93,7 +94,7 @@ class Alert:
     @property
     def duration_seconds(self) -> float:
         """Get alert duration."""
-        end_time = self.resolved_at or datetime.now(timezone.utc)
+        end_time = self.resolved_at or datetime.now(UTC)
         return (end_time - self.started_at).total_seconds()
 
     @property
@@ -347,7 +348,7 @@ class AlertManager:
     async def evaluate(self) -> list[Alert]:
         """Evaluate all alert rules and return state changes."""
         changed_alerts = []
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         for rule in self._rules.values():
             if not rule.enabled:
@@ -473,7 +474,7 @@ class AlertManager:
 
         payload = {
             "alert": alert.to_dict(),
-            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "timestamp": datetime.now(UTC).isoformat(),
         }
 
         async with httpx.AsyncClient() as client:
@@ -514,7 +515,7 @@ class AlertManager:
                 {"title": "Category", "value": alert.rule.category.value, "short": True},
             ],
             "footer": "Predictive Scaler",
-            "ts": int(datetime.now(timezone.utc).timestamp()),
+            "ts": int(datetime.now(UTC).timestamp()),
         }
 
         if alert.annotations.get("runbook"):
